@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.log
+
+# 隐私保护：课程设计报告/截图含学号、班级、姓名等个人信息，一律不公开上传
+docs/
+*.pdf
