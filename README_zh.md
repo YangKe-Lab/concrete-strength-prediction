@@ -4,6 +4,10 @@
 
 基于**最小二乘线性回归**（3 种变体）与**手写反向传播神经网络**（2 种结构）的混凝土抗压强度预测课程设计。所有模型均使用**纯 NumPy 矩阵运算从零实现**，不依赖 scikit-learn、TensorFlow、PyTorch 等任何机器学习框架。
 
+> **同一套研究的两种实现**：下文的 NumPy 版，以及把整条链路搬到结构设计平台上的**低代码 E-GAMA 卡片版**
+> （同一份 66/16 数据、同一种算法，另有第二个非线性案例「鸢尾花分类」）——
+> 见 [`gama-cards/`](gama-cards/README_zh.md)。
+
 [![Python](https://img.shields.io/badge/Python-3.8+-blue)](https://www.python.org/)
 [![NumPy](https://img.shields.io/badge/NumPy-从零实现-orange)](https://numpy.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -157,6 +161,52 @@
 
 ---
 
+## 🧩 低代码版 —— 同一套研究的「拖卡版」实现
+
+[`gama-cards/`](gama-cards/README_zh.md) 是 E-GAMA（结构设计平台，C# / .NET Framework 4.7.2）的
+**自定义卡片工程**，把上面这整套实验搬到了画布上：读数据 → 全连接层 → 激活函数 → 训练 → 推理 →
+评估 → 多模型对比，**全程不写代码**。卡片内的网络核心与 [`src/ANN_model.py`](src) 同源手写，
+两种实现互为交叉校验：
+
+| 模型 | NumPy 版（本仓库） | E-GAMA 卡片版（C#） |
+|------|-------------------|---------------------|
+| 线性·简单 simple | 0.9352 / 0.9443 | 0.9352 / 0.9443 |
+| 线性·交互 interaction | 0.9495 / **0.9616** | 0.9495 / **0.9616** |
+| 线性·多项式 poly | 0.9601 / 0.9591 | 0.9601 / 0.9591 |
+| ANN 3-10-1 | 0.9711 / 0.9654 | 0.9675 / 0.9426 |
+| ANN 3-5-5-1 | 0.9722 / 0.9515 | 0.9637 / 0.9300 |
+
+*（格式：训练集 R² / 测试集 R²。三个线性模型**逐位一致**，交叉校验通过；两个 ANN 不一致属预期——
+C# 与 NumPy 的 He 初始化随机序列不同，见下节。）*
+
+<p align="center">
+  <img src="gama-cards/cases/01-concrete-strength-prediction/figures/结果对比___混凝土抗压强度预测对比_1_精度总览.png" alt="五模型精度总览" width="820">
+  <br><em>图 9 —— 「结果对比」卡一键生成的五模型对比（精度总览页）</em>
+</p>
+
+### 关于 ANN 结果：用 9 次初始化代替单次
+
+`src/ANN_model.py` 的 He 初始化**没有设随机种子**，所以任何一个单次 ANN 数值——**包括上文核心结论里的
+0.9654——都只是一次抽样**，不是这个网络的期望表现。同一网络换 9 组初始化重训，测试集 R² = 0.9201…0.9570
+（均值 **0.9481 ± 0.0119**），**9 次全部低于最优线性模型的 0.9616**：
+
+<p align="center">
+  <img src="gama-cards/cases/02-iris-classification/figures/9次重复实验.png" alt="9 次重复实验" width="700">
+  <br><em>图 10 —— ANN 模型1 的 9 次初始化结果 vs 最优线性模型（0.9616 参考线）</em>
+</p>
+
+经得起重复的结论是：在这份 66/16 划分上，ANN 与交互线性模型**在统计上无法区分**——ANN 的非线性能力
+真实存在（训练集 R² 稳定更高），但 16 个测试样本不足以确立泛化优势。
+`gama-cards/` 里的第二个案例给出了互补的一面：在真正非线性的任务上 ANN 确实赢，所以「任务性质决定模型选择」
+才是诚实口径：
+
+<p align="center">
+  <img src="gama-cards/cases/02-iris-classification/figures/鸢尾花_决策边界对比.png" alt="鸢尾花决策边界" width="720">
+  <br><em>图 11 —— 鸢尾花（versicolor vs virginica，花瓣长×宽）：直线边界 ≈ 94 %，ANN 曲线边界 ≈ 98 %</em>
+</p>
+
+---
+
 ## 📁 项目结构
 
 ```
@@ -175,6 +225,10 @@ concrete-strength-prediction/
 │   ├── LinearModel1-3.png   #   线性模型拟合散点图
 │   ├── ANN_Model1/2.png     #   ANN 拟合散点图
 │   └── ANN_Model*_Train_MSE.png  # 训练 MSE 曲线
+├── gama-cards/              # 低代码 E-GAMA 卡片版：同一套研究的「拖卡」实现（C#）
+│   ├── GAMAcard/            #   卡片源码 + 离线出图工具 + .pgz 读写工具 + 使用文档 + 课程设计 12 页网页 PPT
+│   ├── cases/               #   01 混凝土强度（同一份 66/16 划分）· 02 鸢尾花分类
+│   └── ppt/                 #   双案例 14 页讲演网页（自包含 HTML）
 ├── docs/                    # （不随仓库提供——课程设计报告，隐私保护）
 ├── requirements.txt
 ├── LICENSE
@@ -200,6 +254,8 @@ python src/ANN_model.py
 ```
 
 > 脚本基于自身所在目录解析 `data/` 与 `results/` 路径，任意工作目录下均可直接运行。
+
+> **不写代码的路线**：在 E-GAMA 里打开 [`gama-cards/cases/01-concrete-strength-prediction/case/抗压强度预测.pgz`](gama-cards/cases/01-concrete-strength-prediction/case)，运行「结果对比」卡即可跑出全部 5 个模型——卡片清单与编译部署步骤见 [`gama-cards/README_zh.md`](gama-cards/README_zh.md)。
 
 ---
 

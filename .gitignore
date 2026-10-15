@@ -19,3 +19,13 @@ Thumbs.db
 # 隐私保护：课程设计报告/截图含学号、班级、姓名等个人信息，一律不公开上传
 docs/
 *.pdf
+
+# C# / .NET（gama-cards 卡片工程）
+bin/
+obj/
+*.user
+*.suo
+*.crd
+*.pga
+*.pdb
+packages/

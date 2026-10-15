@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="GAMAcard.csproj" Id="f1fc61c7-a895-4c38-928b-f902179f1b3a">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+</Solution>
